@@ -25,7 +25,6 @@ proc updatedisplay {} {
 				set portErrorCount($idx) [vjtag_recv_blocking $vjtag_instance]
 				set portErrorBits($idx) [format %x [vjtag_recv_blocking $vjtag_instance]]
 			}
-			update
 		}
 		usbblaster_close $vjtag_instance
 	}
@@ -35,44 +34,81 @@ proc updatedisplay {} {
 proc send_reset {} {
 	global connected
 	global vjtag_instance
-	if {$connected} {
+	set contmp $connected;
+	set connected 0
+	if {$contmp} {
 		if [ usbblaster_open $vjtag_instance ] {
 			vjtag_send $vjtag_instance 255
 		}
 		usbblaster_close $vjtag_instance
 	}
+	set connected $contmp
 }
 
-proc connect_jtag {} {
+proc connect_jtag { id } {
 	global usbblaster_name
 	global usbblaster_device
 	global vjtag_instance
 	global displayConnect
 	global connected
 
-	set vjtag_instance [usbblaster_findinstance 0x55aa]
+	if { [count_instances $id] > 1 } {
+		set vjtag_instance [usbblaster_findinstance $id [select_instance $id]]
+	} else {
+		set vjtag_instance [usbblaster_findinstance $id 0]
+	}
+	
 	if {$vjtag_instance<0} {
 		set displayConnect "Connection failed\n"
 		set connected 0
 	} else {
 		set displayConnect "Connected to:\n$usbblaster_name\n$usbblaster_device"
 		set connected 1
-		.btnConn configure -state disabled
-		updatedisplay
 	}
 }
 
-# Find the USB Blaster
-set vjtag_instance [usbblaster_findinstance 0x55aa]
 
-if {$vjtag_instance<0} {
-	puts "Error - couldn't open virtual JTAG instance"
-	exit
+proc count_instances { id } {
+	set instancecount 0
+	while { [usbblaster_findinstance $id $instancecount] >-1} {
+		incr instancecount
+	}
+	return $instancecount
 }
-# Loop forever
 
-fconfigure stdin -blocking 0
 
+proc select_instance { id } {
+	global usbblaster_name
+	global usbblaster_device
+	global connected
+	global select_instance_idx
+	set connected 0
+
+	toplevel .dlg
+	wm state .dlg normal
+	wm title .dlg "Connect to..."
+
+	listbox .dlg.lb -selectmode single -width 78
+	grid .dlg.lb -in .dlg -row 1 -column 1 -sticky ew -padx 5 -pady 2
+
+	set idx 0
+	set instance [usbblaster_findinstance $id $idx]
+	while {$instance>-1} {
+		.dlg.lb insert $idx "$usbblaster_name / $usbblaster_device / $instance"
+		incr idx
+		set instance [usbblaster_findinstance $id $idx]
+	}
+	set select_instance_idx 0
+	bind .dlg.lb {<<ListboxSelect>>}  {global select_instance_idx; set select_instance_idx [.dlg.lb curselection]}
+	button .dlg.bt -text "Connect" -command [puts [.dlg.lb curselection]; list destroy .dlg]
+	grid .dlg.bt -in .dlg -row 2 -column 1 -sticky ew -padx 5 -pady 2
+
+	tkwait window .dlg
+	return $select_instance_idx
+}
+
+# Find the USB Blaster
+puts "found [count_instances 0x55aa ] instances"
 
 wm state . normal
 wm title . "SDRAMStressTest Statistics"
@@ -85,7 +121,7 @@ set  displayConnect "Not yet connected\nNo Interface\nNo Device"
 frame .frmConnection
 grid .frmConnection -in .  -row 1 -column 1
 
-button .btnConn -text "Connect" -command "connect_jtag"
+button .btnConn -text "Connect..." -command "set connected 0; connect_jtag 0x55aa"
 grid .btnConn -in .frmConnection -row 1 -column 1 -padx 5 -sticky ew
 
 button .btnReset -text "Reset" -command "send_reset"
@@ -123,6 +159,7 @@ for {set idx 0} {$idx<5} {incr idx} {
 
 update
 
+# connect_jtag 0x55aa
 updatedisplay
 tkwait window .
 

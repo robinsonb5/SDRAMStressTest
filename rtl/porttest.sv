@@ -16,6 +16,9 @@ module porttest #(parameter addrwidth=16, parameter datawidth=16, parameter cycl
 	output reg [31:0] errorcount
 );
 
+initial assert(addrwidth>cyclewidth)
+	else $error("PortTest: Address width must be >= cycle width!");
+
 // First, a cycle counter which pseudo-randomly picks a cycle length for the test
 
 reg cycle_next;
@@ -29,7 +32,6 @@ lfsr #(.width(cyclewidth)) cyclelfsr
 	.save(1'b0),
 	.restore(1'b0)
 );
-
 
 reg lfsr_next;
 reg	lfsr_save;
@@ -91,7 +93,9 @@ begin
 		lfsr_save<=1'b0;
 		lfsr_restore<=1'b0;
 		cycle_next<=1'b0;
-	end	else begin
+		ram_rd_req<=1'b0;
+		ram_wr_req<=1'b0;
+	end else begin
 		lfsr_next<=1'b0;
 		lfsr_save<=1'b0;
 		lfsr_restore<=1'b0;

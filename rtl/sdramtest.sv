@@ -16,7 +16,9 @@ module sdramtest #(parameter sysclk_frequency=1000) (
 	output vs,
 	output [7:0] r,
 	output [7:0] g,
-	output [7:0] b
+	output [7:0] b,
+	output vena,
+	output pixel
 );
 
 reg jtag_reset=1'b1;
@@ -46,7 +48,7 @@ wire [15:0] rom_dout;
 
 assign rom_req = rom_we ? romwr_req : romrd_req;
 
-porttest #(.addrwidth(rom_high),.datawidth(16),.cyclewidth(4)) romport
+porttest #(.addrwidth(rom_high),.datawidth(16),.cyclewidth(11)) romport
 (
 	.clk(clk),
 	.reset_n(reset_n),
@@ -80,7 +82,7 @@ wire [15:0] wram_dout;
 
 assign wram_req = wram_we ? wram_wr_req : wram_rd_req;
 
-porttest #(.addrwidth(wram_high),.datawidth(8),.cyclewidth(4)) wramport
+porttest #(.addrwidth(wram_high),.datawidth(8),.cyclewidth(12)) wramport
 (
 	.clk(clk),
 	.reset_n(reset_n),
@@ -114,7 +116,7 @@ wire [15:0] vram0_dout;
 
 assign vram0_req = vram0_we ? vram0_wr_req : vram0_rd_req;
 
-porttest #(.addrwidth(vram0_high),.datawidth(16),.cyclewidth(3)) vram0port
+porttest #(.addrwidth(vram0_high),.datawidth(16),.cyclewidth(13)) vram0port
 (
 	.clk(clk),
 	.reset_n(reset_n),
@@ -148,7 +150,7 @@ wire [15:0] vram1_dout;
 
 assign vram1_req = vram1_we ? vram1_wr_req : vram1_rd_req;
 
-porttest #(.addrwidth(vram1_high),.datawidth(16),.cyclewidth(3)) vram1port
+porttest #(.addrwidth(vram1_high),.datawidth(16),.cyclewidth(14)) vram1port
 (
 	.clk(clk),
 	.reset_n(reset_n),
@@ -182,7 +184,7 @@ wire [15:0] aram_dout;
 
 assign aram_req = aram_we ? aram_wr_req : aram_rd_req;
 
-porttest #(.addrwidth(aram_high),.datawidth(8),.cyclewidth(4)) aramport
+porttest #(.addrwidth(aram_high),.datawidth(8),.cyclewidth(15)) aramport
 (
 	.clk(clk),
 	.reset_n(reset_n),
@@ -333,8 +335,11 @@ video_timings vt
 	.hblank_n(hb),
 	.vblank_n(vb),
 	.vblank_stb(vb_stb),
-	.xpos(xpos)
+	.xpos(xpos),
+	.pixel_stb(pixel)
 );
+
+assign vena=hb&vb;
 
 wire [7:0] hm_idx=xpos[10:3];
 wire [7:0] hm_v=heatmap[hm_idx];
@@ -357,7 +362,7 @@ reg [7:0] heatmap [5*16]; /* 5 ports under test */
 integer port;
 integer errorbit;
 
-always @(posedge clk) begin
+always @(posedge clk or negedge reset_n) begin
 	if(!reset_n) begin
 		for(port=0;port<5;port=port+1)
 			errorbits_cumulative[port]<=16'h0;

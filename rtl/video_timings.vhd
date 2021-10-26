@@ -32,15 +32,15 @@ entity video_timings is
 
 		-- Framing parameters - defaults suitable for a 640x480
 		clkdiv : in unsigned(clkdivBits-1 downto 0) := to_unsigned(3,clkdivBits);
-		htotal : in unsigned(hFramingBits-1 downto 0) := to_unsigned(800,hFramingBits);
-		hbstart : in unsigned(hFramingBits-1 downto 0) := to_unsigned(640,hFramingBits);
-		hsstart : in unsigned(hFramingBits-1 downto 0) := to_unsigned(656,hFramingBits);
-		hsstop : in unsigned(hFramingBits-1 downto 0) := to_unsigned(752,hFramingBits);
+		htotal : in unsigned(hFramingBits-1 downto 0) := to_unsigned(800-1,hFramingBits);
+		hbstart : in unsigned(hFramingBits-1 downto 0) := to_unsigned(640-1,hFramingBits);
+		hsstart : in unsigned(hFramingBits-1 downto 0) := to_unsigned(656-1,hFramingBits);
+		hsstop : in unsigned(hFramingBits-1 downto 0) := to_unsigned(752-1,hFramingBits);
 
-		vtotal : in unsigned(vFramingBits-1 downto 0) := to_unsigned(523,vFramingBits) ;
-		vbstart : in unsigned(vFramingBits-1 downto 0) := to_unsigned(480,vFramingBits) ;
-		vsstart : in unsigned(vFramingBits-1 downto 0) := to_unsigned(491,vFramingBits) ;
-		vsstop : in unsigned(vFramingBits-1 downto 0) := to_unsigned(493,vFramingBits) 
+		vtotal : in unsigned(vFramingBits-1 downto 0) := to_unsigned(523-1,vFramingBits) ;
+		vbstart : in unsigned(vFramingBits-1 downto 0) := to_unsigned(480-1,vFramingBits) ;
+		vsstart : in unsigned(vFramingBits-1 downto 0) := to_unsigned(491-1,vFramingBits) ;
+		vsstop : in unsigned(vFramingBits-1 downto 0) := to_unsigned(493-1,vFramingBits) 
 	);
 end entity;
 
@@ -50,7 +50,6 @@ architecture rtl of video_timings is
 	signal clkdivCnt : unsigned(clkdivBits-1 downto 0);
 	signal hcounter : unsigned(hFramingBits-1 downto 0);
 	signal vcounter : unsigned(vFramingBits-1 downto 0);
-	signal pixel_stb_r : std_logic;
 	signal hb_internal : std_logic;
 	signal vb_internal : std_logic;
 begin

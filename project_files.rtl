@@ -12,4 +12,5 @@ demistify_config_pkg.vhd
 firmware/controller_rom1_byte.vhd
 firmware/controller_rom2_byte.vhd
 
+mist/build_id_verilog.tcl
 

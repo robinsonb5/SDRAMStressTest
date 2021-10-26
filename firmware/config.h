@@ -16,12 +16,12 @@
 more obvious application of disk images on computer cores.  If not defined
 here, the number of units defaults to 4. */
 #undef CONFIG_DISKIMG
-#undef CONFIG_DISKIMG_UNITS 2
+#undef CONFIG_DISKIMG_UNITS
 
 /* Speed up file operations by "bookmarking" the file.
    (Undef to disable, or set to the number of desired bookmarks - a reasonable
    range would be between 4 and 16 */
-#undef CONFIG_FILEBOOKMARKS 6
+#undef CONFIG_FILEBOOKMARKS
 
 /* Keyboard-based Joystick emulation */
 #undef CONFIG_JOYKEYS
