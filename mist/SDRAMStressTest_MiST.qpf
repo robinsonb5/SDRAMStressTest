@@ -27,4 +27,4 @@ DATE = "09:42:13  July 01, 2021"
 
 # Revisions
 
-PROJECT_REVISION = "SDRAMTest_MiST"
+PROJECT_REVISION = "SDRAMStressTest_MiST"

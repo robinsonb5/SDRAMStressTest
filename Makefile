@@ -49,10 +49,10 @@ clean:
 tns:
 	@for BOARD in ${BOARDS}; do \
 		echo $$BOARD; \
-		grep -r Design-wide\ TNS Board/$$BOARD/*.rpt; \
+		grep -r Design-wide\ TNS $$BOARD/*.rpt; \
 	done
 
 .PHONY: mist
 mist:
-	$(Q13)/quartus_sh --flow compile Board/mist/$(PROJECT)_mist.qpf
+	$(Q13)/quartus_sh --flow compile mist/$(PROJECT)_MiST.qpf
 
