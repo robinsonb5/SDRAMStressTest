@@ -6,7 +6,7 @@ use IEEE.numeric_std.all;
 
 entity video_timings is
 	generic (
-		clkdivBits : integer := 4;
+		clkDivBits : integer := 4;
 		hFramingBits : integer := 11;
 		vFramingBits : integer := 11
 	);
@@ -31,7 +31,7 @@ entity video_timings is
 		ypos : out unsigned(vFramingBits-1 downto 0);
 
 		-- Framing parameters - defaults suitable for a 640x480
-		clkdiv : in unsigned(clkdivBits-1 downto 0) := to_unsigned(3,clkdivBits);
+		clkdiv : in unsigned(clkDivBits-1 downto 0) := to_unsigned(3,clkDivBits);
 		htotal : in unsigned(hFramingBits-1 downto 0) := to_unsigned(800-1,hFramingBits);
 		hbstart : in unsigned(hFramingBits-1 downto 0) := to_unsigned(640-1,hFramingBits);
 		hsstart : in unsigned(hFramingBits-1 downto 0) := to_unsigned(656-1,hFramingBits);
@@ -47,7 +47,7 @@ end entity;
 -- -----------------------------------------------------------------------
 
 architecture rtl of video_timings is
-	signal clkdivCnt : unsigned(clkdivBits-1 downto 0);
+	signal clkdivcnt : unsigned(clkDivBits-1 downto 0);
 	signal hcounter : unsigned(hFramingBits-1 downto 0);
 	signal vcounter : unsigned(vFramingBits-1 downto 0);
 	signal hb_internal : std_logic;
@@ -63,7 +63,7 @@ begin
 	begin
 
 		if reset_n='0' then
-			clkdivCnt<=(others=>'0');
+			clkdivcnt<=(others=>'0');
 			hcounter<=(others=>'0');
 			vcounter<=(others=>'0');
 			hsync_n<='1';
@@ -74,9 +74,9 @@ begin
 			hblank_stb<='0';
 			vblank_stb<='0';
 			pixel_stb<='0';
-			clkdivCnt<=clkdivCnt+1;
+			clkdivcnt<=clkdivcnt+1;
 
-			if clkdivCnt=clkdiv then -- new pixel
+			if clkdivcnt=clkDiv then -- new pixel
 				pixel_stb<='1';
 			
 				-- Horizontal counters
@@ -124,7 +124,7 @@ begin
 					vcounter<=(others=>'0');
 				end if;
 			
-				clkdivCnt<=(others=>'0');
+				clkdivcnt<=(others=>'0');
 			end if;
 		end if;
 

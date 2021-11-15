@@ -1,8 +1,9 @@
 // SDRAM testbench
 
 module sdramtest #(parameter sysclk_frequency=1000) (
-	input  wire       clk,
-	input  wire       reset_in,
+	input  clk,
+	input  slowclk,
+	input  reset_in,
 	inout [15:0] DRAM_DQ,
 	output [`SDRAM_ROWBITS-1:0]	DRAM_ADDR,
 	output DRAM_LDQM,
@@ -308,7 +309,7 @@ end
 // This bridge is borrowed from the EightThirtyTwo debug interface
 
 debug_bridge_jtag #(.id('h55aa)) bridge (
-	.clk(clk),
+	.clk(slowclk),
 	.reset_n(reset_n),
 	.d(jtag_d),
 	.q(jtag_q),
@@ -336,14 +337,18 @@ video_timings vt
 	.vblank_n(vb),
 	.vblank_stb(vb_stb),
 	.xpos(xpos),
-	.pixel_stb(pixel)
+	.pixel_stb(pixel),
+	.clkdiv(`SDRAM_tCKminCL2 < 10000 ? 4 : 3)
 );
 
 assign vena=hb&vb;
 
-wire [7:0] hm_idx=xpos[10:3];
-wire [7:0] hm_v=heatmap[hm_idx];
-always @(posedge clk) begin
+reg [7:0] hm_idx;
+reg [7:0] hm_v;
+always @(posedge slowclk) begin
+	hm_idx<=xpos[10:3];
+	hm_v<=heatmap[hm_idx];
+
 	if(hb&vb) begin
 		r<=hm_v;
 		g<=hm_v ^ 8'hff;
@@ -362,7 +367,7 @@ reg [7:0] heatmap [5*16]; /* 5 ports under test */
 integer port;
 integer errorbit;
 
-always @(posedge clk or negedge reset_n) begin
+always @(posedge slowclk or negedge reset_n) begin
 	if(!reset_n) begin
 		for(port=0;port<5;port=port+1)
 			errorbits_cumulative[port]<=16'h0;

@@ -79,6 +79,9 @@ assign wr_req=ram_wr_req;
 
 reg [3:0] initctr;
 
+reg rd_ack_d;
+reg [datawidth-1:0] d_d;
+
 always @(posedge clk,negedge reset_n)
 begin
 	if(!reset_n) begin
@@ -101,6 +104,9 @@ begin
 		lfsr_restore<=1'b0;
 		cycle_next<=1'b0;
 		err<=1'b0;
+
+		d_d<=d;
+		rd_ack_d<=rd_ack;
 
 		case(state)
 			INIT: begin
@@ -149,8 +155,8 @@ begin
 			end
 
 			READ2: begin
-				if(ram_rd_req==rd_ack) begin
-					if(d==lfsr_d_q) begin
+				if(ram_rd_req==rd_ack_d) begin
+					if(d_d==lfsr_d_q) begin
 						// Using != doesn't seem to work with Icarus Verilog when the incoming signal is high-z
 					end else begin
 						$display("READ error, mismatch");
