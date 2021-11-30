@@ -6,7 +6,7 @@ use IEEE.numeric_std.all;
 
 entity video_timings is
 	generic (
-		clkDivBits : integer := 4;
+		clkdivBits : integer := 4;
 		hFramingBits : integer := 11;
 		vFramingBits : integer := 11
 	);
@@ -31,15 +31,15 @@ entity video_timings is
 		ypos : out unsigned(vFramingBits-1 downto 0);
 
 		-- Framing parameters - defaults suitable for a 640x480
-		clkdiv : in unsigned(clkDivBits-1 downto 0) := to_unsigned(3,clkDivBits);
+		clkdiv : in unsigned(clkdivBits-1 downto 0) := to_unsigned(3,clkdivBits);
 		htotal : in unsigned(hFramingBits-1 downto 0) := to_unsigned(800-1,hFramingBits);
 		hbstart : in unsigned(hFramingBits-1 downto 0) := to_unsigned(640-1,hFramingBits);
 		hsstart : in unsigned(hFramingBits-1 downto 0) := to_unsigned(656-1,hFramingBits);
 		hsstop : in unsigned(hFramingBits-1 downto 0) := to_unsigned(752-1,hFramingBits);
 
-		vtotal : in unsigned(vFramingBits-1 downto 0) := to_unsigned(523-1,vFramingBits) ;
-		vbstart : in unsigned(vFramingBits-1 downto 0) := to_unsigned(480-1,vFramingBits) ;
-		vsstart : in unsigned(vFramingBits-1 downto 0) := to_unsigned(491-1,vFramingBits) ;
+		vtotal : in unsigned(vFramingBits-1 downto 0) := to_unsigned(523-1,vFramingBits);
+		vbstart : in unsigned(vFramingBits-1 downto 0) := to_unsigned(480-1,vFramingBits);
+		vsstart : in unsigned(vFramingBits-1 downto 0) := to_unsigned(491-1,vFramingBits);
 		vsstop : in unsigned(vFramingBits-1 downto 0) := to_unsigned(493-1,vFramingBits) 
 	);
 end entity;
@@ -47,7 +47,7 @@ end entity;
 -- -----------------------------------------------------------------------
 
 architecture rtl of video_timings is
-	signal clkdivcnt : unsigned(clkDivBits-1 downto 0);
+	signal clkdivCnt : unsigned(clkdivBits-1 downto 0);
 	signal hcounter : unsigned(hFramingBits-1 downto 0);
 	signal vcounter : unsigned(vFramingBits-1 downto 0);
 	signal hb_internal : std_logic;
@@ -63,7 +63,7 @@ begin
 	begin
 
 		if reset_n='0' then
-			clkdivcnt<=(others=>'0');
+			clkdivCnt<=(others=>'0');
 			hcounter<=(others=>'0');
 			vcounter<=(others=>'0');
 			hsync_n<='1';
@@ -74,9 +74,9 @@ begin
 			hblank_stb<='0';
 			vblank_stb<='0';
 			pixel_stb<='0';
-			clkdivcnt<=clkdivcnt+1;
+			clkdivCnt<=clkdivCnt+1;
 
-			if clkdivcnt=clkDiv then -- new pixel
+			if clkdivCnt=clkdiv then -- new pixel
 				pixel_stb<='1';
 			
 				-- Horizontal counters
@@ -91,40 +91,39 @@ begin
 				if hcounter=hsstart then
 					hsync_n<='0';
 				end if;
-			
-				if hcounter=hsstop then
-					hsync_n<='1';
-					vcounter<=vcounter+1;			
-				end if;
 
 				if hcounter=htotal then -- New row
 					hb_internal<='1';
 					hcounter<=(others=>'0');
 				end if;
-			
-				-- Vertical counters
+				
+				if hcounter=hsstop then
+					hsync_n<='1';
+					vcounter<=vcounter+1;			
 
-				if vcounter=vbstart then
-					if hcounter=0 then
+					-- Vertical counters
+
+					if vcounter=vbstart then
 						vblank_stb<='1';
+						vb_internal<='0';
 					end if;
-					vb_internal<='0';
+				
+					if vcounter=vsstart then
+						vsync_n<='0';
+					end if;
+				
+					if vcounter=vsstop then
+						vsync_n<='1';
+					end if;
+				
+					if vcounter=vtotal then -- New frame
+						vb_internal<='1';
+						vcounter<=(others=>'0');
+					end if;
+
 				end if;
-			
-				if vcounter=vsstart then
-					vsync_n<='0';
-				end if;
-			
-				if vcounter=vsstop then
-					vsync_n<='1';
-				end if;
-			
-				if hcounter=hsstop and vcounter=vtotal then -- New frame
-					vb_internal<='1';
-					vcounter<=(others=>'0');
-				end if;
-			
-				clkdivcnt<=(others=>'0');
+
+				clkdivCnt<=(others=>'0');
 			end if;
 		end if;
 

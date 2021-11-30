@@ -65,25 +65,30 @@ wm title . "SDRAMStressTest Statistics"
 global connected
 set connected 0
 
-# Connect button
-frame .frame
-grid .frame -in .  -row 1 -column 1
+frame .frmConnection -relief sunken -borderwidth 2 -padx 5 -pady 5
+pack .frmConnection -fill both -expand 1
 
 set  displayConnect "Not yet connected\nNo Interface\nNo Device"
 label .lblConn -justify left -textvariable displayConnect
 button .btnConn -text "Connect..." -command "connect"
 button .btnReset -text "Reset" -command "send_reset"
 
-grid .btnConn -in .frame -row 1 -column 1 -padx 5 -sticky ew
-grid .btnReset -in .frame -row 2 -column 1 -padx 5 -sticky ew
-grid .lblConn -in .frame -row 1 -column 2 -columnspan 5 -rowspan 2 -padx 5 -pady 5
+grid .btnConn -in .frmConnection -row 0 -column 0 -padx 5 -sticky ew
+grid .btnReset -in .frmConnection -row 1 -column 0 -padx 5 -sticky ew
+grid .lblConn -in .frmConnection -row 0 -column 1 -rowspan 2 -padx 5 -pady 5
 
 global portReadCount
 global portErrorCount
 global portErrorBits
 
-for {set idx 0} {$idx<5} {incr idx} {
+frame .frame -relief sunken -borderwidth 2 -padx 5 -pady 5
+pack .frame -fill both -expand yes
 
+for {set idx 0} {$idx<5} {incr idx} {
+	grid columnconfigure .frame $idx -weight 1
+}
+
+for {set idx 0} {$idx<5} {incr idx} {
 	label .lbl($idx) -justify right -text "port $idx reads:"
 	set portReadCount($idx) 0
 	label .lblReadCount($idx) -justify left -textvariable portReadCount($idx)
@@ -96,12 +101,12 @@ for {set idx 0} {$idx<5} {incr idx} {
 	set portErrorBits($idx) 0
 	label .lblErrorBits($idx) -justify left -textvariable portErrorBits($idx)
 
-	grid .lbl($idx) -in .frame -row [expr $idx + 3] -column 1 -padx 5 -pady 2
-	grid .lblReadCount($idx) -in .frame -row [expr $idx + 3] -column 2 -padx 5 -pady 2
-	grid .lbl1($idx) -in .frame -row [expr $idx + 3] -column 3 -padx 5 -pady 2
-	grid .lblErrorCount($idx) -in .frame -row [expr $idx + 3] -column 4  -padx 5 -pady 2
-	grid .lbl2($idx) -in .frame -row [expr $idx + 3] -column 5 -padx 5 -pady 2
-	grid .lblErrorBits($idx) -in .frame -row [expr $idx + 3] -column 6 -padx 5 -pady 2
+	grid .lbl($idx) -in .frame -row $idx -column 0 -padx 5 -pady 2
+	grid .lblReadCount($idx) -in .frame -row $idx -column 1 -padx 5 -pady 2
+	grid .lbl1($idx) -in .frame -row $idx -column 2 -padx 5 -pady 2
+	grid .lblErrorCount($idx) -in .frame -row $idx -column 3  -padx 5 -pady 2
+	grid .lbl2($idx) -in .frame -row $idx -column 4 -padx 5 -pady 2
+	grid .lblErrorBits($idx) -in .frame -row $idx -column 5 -padx 5 -pady 2
 }
 
 update

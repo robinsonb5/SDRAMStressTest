@@ -1,3 +1,11 @@
+# Please note, I don't believe these constraints are correct for DE10-Nano.
+# I'm seeing much larger than expected delays in the clock path, including
+# over 7ns between the PLL output and the clock output pin, which are causing
+# inputs to fail timing by a large margin, despite the project working.
+# I'm not yet familiar enough with Cyclone V - which is a different
+# tech level from the Cyclone-III-derivative devices nearly all the other 
+# Retro-FPGA platforms use - to fully understand what's going on there.
+
 set topmodule emu|
 
 set RAM_CLK SDRAM_CLK

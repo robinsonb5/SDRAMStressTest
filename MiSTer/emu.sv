@@ -253,12 +253,15 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 ///////////////////////   CLOCKS   ///////////////////////////////
 
 wire clk_sys;
+wire clk_slow;
+
 pll pll
 (
 	.refclk(CLK_50M),
 	.rst(0),
 	.outclk_0(SDRAM_CLK),
-	.outclk_1(clk_sys)
+	.outclk_1(clk_sys),
+	.outclk_2(clk_slow)
 );
 
 wire reset = RESET | status[0] | buttons[1];
@@ -270,6 +273,7 @@ wire vid_pixel;
 
 sdramtest #(.sysclk_frequency(1000)) test (
 	.clk(clk_sys),
+	.slowclk(clk_slow),
 	.reset_in(!reset),
 	.DRAM_DQ(SDRAM_DQ),
 	.DRAM_ADDR(SDRAM_A),

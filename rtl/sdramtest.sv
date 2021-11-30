@@ -249,7 +249,7 @@ wire jtag_wr;
 wire [31:0] jtag_d;
 wire [31:0] jtag_q;
 
-always @(posedge clk or negedge reset_in) begin
+always @(posedge slowclk or negedge reset_in) begin
 	if(!reset_in) begin
 		jtag_state<=jtag_cmd;
 		jtag_nextstate<=jtag_cmd;
@@ -343,6 +343,15 @@ video_timings vt
 
 assign vena=hb&vb;
 
+// Widen strobe pulses so they're visible from slowclk
+reg vb_stb_d;
+always @(posedge clk)
+	vb_stb_d<=vb_stb;
+wire vb_stb_slowclk=vb_stb|vb_stb_d;
+
+
+// Render the heatmap
+
 reg [7:0] hm_idx;
 reg [7:0] hm_v;
 always @(posedge slowclk) begin
@@ -360,7 +369,8 @@ always @(posedge slowclk) begin
 	end
 end
 
-// Visualise the errors on screen
+
+// Build a "heat map" of error bits
 
 reg [7:0] heatmap [5*16]; /* 5 ports under test */
 
@@ -373,7 +383,7 @@ always @(posedge slowclk or negedge reset_n) begin
 			errorbits_cumulative[port]<=16'h0;
 	end else begin
 		for(port=0;port<5;port=port+1) begin
-			if(vb_stb) begin
+			if(vb_stb_slowclk) begin
 				for(errorbit=0;errorbit<16;errorbit=errorbit+1) begin
 					if(|heatmap[port*16+errorbit])
 						heatmap[port*16+errorbit]<=heatmap[port*16+errorbit]-8'b1;

@@ -41,13 +41,13 @@ reg [7:0] tap1=tap(width);
 
 function [7:0] tap(input [7:0] w);
 	case(w)
-		3:	tap=2;
-		4:	tap=3;
-		5:	tap=3;
-		6:	tap=5;
-		7:	tap=6;
-		8:	tap=6;
-		9:	tap=5;
+		 3:	tap=2;
+		 4:	tap=3;
+		 5:	tap=3;
+		 6:	tap=5;
+		 7:	tap=6;
+		 8:	tap=6;
+		 9:	tap=5;
 		10:	tap=7;
 		11:	tap=9;
 		12:	tap=6;
@@ -73,7 +73,7 @@ function [7:0] tap(input [7:0] w);
 		32:	tap=22;
 		33:	tap=20;
 		34:	tap=27;
-		35: tap=33;
+		35:	tap=33;
 		36:	tap=25;
 		37:	tap=5;
 		39:	tap=35;
@@ -180,16 +180,17 @@ assign tap3=twotap_tmp[7:0];
 
 function [15:0] twotaps(input [7:0] w);
 	case(w)
-		8:	begin 	twotaps[15:8]=5;	twotaps[7:0]=4;	end
+		8: 	begin 	twotaps[15:8]=5;	twotaps[7:0]=4;	end
 		12:	begin 	twotaps[15:8]=4;	twotaps[7:0]=1;	end
 		13:	begin 	twotaps[15:8]=3;	twotaps[7:0]=1;	end
 		14:	begin 	twotaps[15:8]=3;	twotaps[7:0]=1;	end
-		15:	begin	twotaps[15:8]=1; twotaps[7:0]=1; end
+		15:	begin		twotaps[15:8]=1;	twotaps[7:0]=1;	end
 		16:	begin 	twotaps[15:8]=13;	twotaps[7:0]=4;	end
 		19:	begin 	twotaps[15:8]=2;	twotaps[7:0]=1;	end
 		24:	begin 	twotaps[15:8]=22;	twotaps[7:0]=17;	end
 		26:	begin 	twotaps[15:8]=2;	twotaps[7:0]=1;	end
 		27:	begin 	twotaps[15:8]=2;	twotaps[7:0]=1;	end
+		32:	begin 	twotaps[15:8]=2;	twotaps[7:0]=1;	end
 		37:	begin 	twotaps[15:8]=4;	twotaps[7:0]=3;	end
 		40:	begin 	twotaps[15:8]=21;	twotaps[7:0]=19;	end
 		42:	begin 	twotaps[15:8]=20;	twotaps[7:0]=19;	end
