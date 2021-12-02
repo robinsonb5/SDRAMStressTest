@@ -22,9 +22,9 @@ module sdramtest #(parameter sysclk_frequency=1000) (
 	output pixel
 );
 
-reg jtag_reset=1'b1;
+reg jtag_reset=1'b0;
 wire reset_n;
-assign reset_n = jtag_reset & reset_in;
+assign reset_n = !jtag_reset & reset_in;
 
 // 5 ports under test
 
@@ -234,77 +234,75 @@ sdram #(.SDRAM_tCK(10000000/sysclk_frequency)) sdram_ctrl (
 );
 
 
-localparam jtag_cmd=0;
-localparam jtag_idx=1;
-localparam jtag_errbits=2;
-localparam jtag_failures=3;
-localparam jtag_cycles=4;
-localparam jtag_wait=5;
-localparam jtag_doreset=6;
-reg [2:0] jtag_nextstate;
-reg [2:0] jtag_state;
+// Virtual JTAG remote interface:
+
+reg jtag_report=1'b0;
+// Data sent to the host computer 
+
+localparam JTAG_IDX_MAX=3;
+
+reg [31:0] framecount;
+
+reg [3:0] jtag_idx=JTAG_IDX_MAX;
+reg [2:0] jtag_port;
+reg [31:0] jtag_d;
+
+always @(posedge slowclk) begin
+		case(jtag_idx)
+			4'h0:	jtag_d<=readcount[jtag_port];
+			4'h1:	jtag_d<=errorcount[jtag_port];
+			4'h2:	jtag_d<={16'b0,errorbits_cumulative[jtag_port]};
+		endcase
+end
+
+
+// Data received from the host computer
+
 wire jtag_req;
 wire jtag_ack;
 wire jtag_wr;
-wire [31:0] jtag_d;
 wire [31:0] jtag_q;
+
+always @(posedge slowclk) begin
+	jtag_reset<=1'b0;
+	jtag_report<=1'b0;
+	if(jtag_ack && !jtag_wr) begin
+		case(jtag_q[31:24]) // Interpret the highest 8 bits as a command byte
+
+			8'hfe: begin
+					jtag_port<=jtag_q[2:0];
+					jtag_report<=1'b1;
+				end
+
+			8'hff: jtag_reset<=1'b1; // Command 0xff: reset
+
+		endcase
+	end
+end
+
+
+// Plumbing
 
 always @(posedge slowclk or negedge reset_in) begin
 	if(!reset_in) begin
-		jtag_state<=jtag_cmd;
-		jtag_nextstate<=jtag_cmd;
-		jtag_req<=1'b0;
 		jtag_wr<=1'b0;
-		jtag_reset<=1'b1;
+		jtag_req<=1'b0;
+		jtag_idx<=JTAG_IDX_MAX;
 	end else begin
+		jtag_req<=!jtag_ack;
+		jtag_wr<=(jtag_idx!=JTAG_IDX_MAX);
 
-		case(jtag_state)
-			jtag_cmd: begin
-					jtag_reset<=1'b1;
-					jtag_wr<=1'b0;
-					jtag_req<=1'b1;
-					jtag_state<=jtag_wait;
-					jtag_nextstate<=jtag_idx;
-				end
-			jtag_idx: begin
-					jtag_wr<=1'b1;
-					jtag_req<=1'b1;
-					jtag_state<=jtag_wait;
-					jtag_nextstate<=jtag_cycles;		
-					jtag_d<=readcount[jtag_q];
-					if(jtag_q[7:0]==8'hff) begin
-						jtag_reset<=1'b0;
-						jtag_state<=jtag_doreset;
-					end
-				end
-			jtag_cycles: begin
-					jtag_wr<=1'b1;
-					jtag_req<=1'b1;
-					jtag_state<=jtag_wait;
-					jtag_nextstate<=jtag_failures;		
-					jtag_d<=errorcount[jtag_q];
-				end
-			jtag_failures: begin
-					jtag_wr<=1'b1;
-					jtag_req<=1'b1;
-					jtag_state<=jtag_wait;
-					jtag_nextstate<=jtag_cmd;		
-					jtag_d<={16'b0,errorbits_cumulative[jtag_q]};
-				end
-			jtag_doreset: begin
-					jtag_state<=jtag_cmd;
-				end
-			jtag_wait: begin
-					if(jtag_ack) begin
-						jtag_state<=jtag_nextstate;
-						jtag_req<=1'b0;
-						jtag_wr<=1'b1;
-					end
-				end
-		endcase
-	
+		if(jtag_report) begin
+			jtag_idx<=1'b0;
+			jtag_wr<=1'b1;
+		end
+
+		if(jtag_ack && jtag_wr)
+			jtag_idx<=jtag_idx+1'b1;
+		
 	end
 end
+
 
 // This bridge is borrowed from the EightThirtyTwo debug interface
 

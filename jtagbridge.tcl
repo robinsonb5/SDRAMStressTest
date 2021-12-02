@@ -17,7 +17,7 @@ proc updatedisplay {} {
 	if {$connected} {
 		if [ vjtag::usbblaster_open ] {
 			for {set idx 0} {$idx<5} {incr idx} {
-				vjtag::send $idx
+				vjtag::send [expr (0xfe << 24) + $idx]
 				set portReadCount($idx) [vjtag::recv_blocking ]
 				set portErrorCount($idx) [vjtag::recv_blocking ]
 				set portErrorBits($idx) [format %x [vjtag::recv_blocking]]
@@ -36,7 +36,7 @@ proc send_reset {} {
 	set connected 0
 	if {$contmp} {
 		if [ vjtag::usbblaster_open ] {
-			vjtag::send 255
+			vjtag::send [expr (0xff << 24) ]
 		}
 		vjtag::usbblaster_close
 	}
