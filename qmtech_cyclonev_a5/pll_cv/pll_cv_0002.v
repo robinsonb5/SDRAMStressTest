@@ -26,7 +26,7 @@ module  pll_cv_0002(
 		.operation_mode("direct"),
 		.number_of_clocks(3),
 		.output_clock_frequency0("133.333333 MHz"),
-		.phase_shift0("-1500 ps"),
+		.phase_shift0("-3000 ps"),
 		.duty_cycle0(50),
 		.output_clock_frequency1("133.333333 MHz"),
 		.phase_shift1("0 ps"),
